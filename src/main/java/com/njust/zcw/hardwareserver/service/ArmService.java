@@ -92,32 +92,32 @@ public class ArmService {
         switch(remoteControlDTO.getControlType()){
             case "单次抓取":
                 commAccessor.sendComm("64");
-                System.out.println("单次抓取");
+                System.out.println("==== 单次抓取 ====");
                 break;
             case "连续抓取":
                 commAccessor.sendComm("67");
-                System.out.println("连续抓取");
+                System.out.println("==== 连续抓取 ====");
                 break;
             case "开传送带":
                 commAccessor.sendComm("4b");
-                System.out.println("开传送带");
+                System.out.println("==== 开传送带 ====");
                 break;
             case "关传送带":
                 commAccessor.sendComm("4c");
-                System.out.println("关传送带");
+                System.out.println("==== 关传送带 ====");
                 break;
             case "切换控制":
                 commAccessor.sendComm("7c");
-                System.out.println("切换");
+                System.out.println("==== 切换 ====");
                 break;
             case "开始/暂停":
                 commAccessor.sendComm("20");
-                System.out.println("开始/暂停");
+                System.out.println("==== 开始/暂停 ====");
                 break;
             default:
             case "复位":
                 commAccessor.sendComm("66");
-                System.out.println("复位");
+                System.out.println("==== 复位 ====");
                 break;
         }
     }
@@ -129,7 +129,40 @@ public class ArmService {
      * @param digitalControlDTO the digital control dto
      */
     public void showDigital(DigitalControlDTO digitalControlDTO){
+        switch(digitalControlDTO.getShowNumber()){
+            case 0:
+                commAccessor.sendComm("10");
+                break;
+            case 1:
+                commAccessor.sendComm("11");
+                break;
+            case 2:
+                commAccessor.sendComm("12");
+                break;
+            case 3:
+                commAccessor.sendComm("13");
+                break;
+            case 4:
+                commAccessor.sendComm("14");
+                break;
+            case 5:
+                commAccessor.sendComm("15");
+                break;
+            case 6:
+                commAccessor.sendComm("16");
+                break;
+            case 7:
+                commAccessor.sendComm("17");
+                break;
+            case 8:
+                commAccessor.sendComm("18");
+                break;
+            case 9:
+            default:
+                commAccessor.sendComm("19");
+                break;
 
+        }
     }
 
     public List<ArmPositionInfoBO> getArmPositionHistory(){
