@@ -13,5 +13,5 @@ import lombok.Data;
  */
 @Data
 public class RemoteControlDTO{
-    String controlType;
+    private String controlType;
 }

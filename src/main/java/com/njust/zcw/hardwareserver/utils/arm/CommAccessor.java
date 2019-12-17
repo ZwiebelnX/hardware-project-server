@@ -1,14 +1,15 @@
 package com.njust.zcw.hardwareserver.utils.arm;
 
+import com.njust.zcw.hardwareserver.module.bo.ArmPosition;
+import com.njust.zcw.hardwareserver.module.bo.ArmPositionInfoBO;
 import gnu.io.*;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.TooManyListenersException;
+import java.sql.Timestamp;
+import java.util.*;
 
 /**
  * <p>Title: ComUtil</p>
@@ -20,7 +21,9 @@ import java.util.TooManyListenersException;
  * @version V1.0
  */
 @Component
-public class CommAccessor implements SerialPortEventListener{
+public class CommAccessor implements SerialPortEventListener {
+
+    public final List<ArmPositionInfoBO> positionList = new ArrayList<>();
 
     // RS232串口
     private SerialPort serialPort;
@@ -36,57 +39,52 @@ public class CommAccessor implements SerialPortEventListener{
         init(com1);
     }
 
-    private void init(CommConfig commConfig) {
-        // 获取系统中所有的通讯端口
-        // 枚举类型
+    private void init(CommConfig commConfig){
         Enumeration<CommPortIdentifier> portList = CommPortIdentifier.getPortIdentifiers();
-        // 记录是否含有指定串口
         boolean portExist = false;
-        // 循环通讯端口
-        while (portList.hasMoreElements()) {
+        while(portList.hasMoreElements()){
             CommPortIdentifier commPortId = portList.nextElement();
             System.out.println(commPortId.getName());
             // 判断是否是串口
-            if (commPortId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
+            if(commPortId.getPortType() == CommPortIdentifier.PORT_SERIAL){
                 // 比较串口名称是否是指定串口
-                if (commConfig.getSerialNumber().equals(commPortId.getName())) {
-                    // 串口存在
+                if(commConfig.getSerialNumber().equals(commPortId.getName())){
                     portExist = true;
                     // 打开串口
-                    try {
+                    try{
                         // open:（应用程序名【随意命名】，阻塞时等待的毫秒数）
-                        serialPort = (SerialPort) commPortId.open(Object.class.getSimpleName(), 2000);
+                        serialPort = (SerialPort) commPortId
+                                .open(Object.class.getSimpleName(), 2000);
                         // 设置串口监听
                         serialPort.addEventListener(this);
                         // 设置串口数据时间有效(可监听)
                         serialPort.notifyOnDataAvailable(true);
                         // 设置串口通讯参数:波特率，数据位，停止位,校验方式
-                        serialPort.setSerialPortParams(commConfig.getBaudRate(), commConfig.getDataBit(),
-                                                       commConfig.getStopBit(), commConfig.getCheckoutBit());
-                    } catch (PortInUseException e) {
+                        serialPort.setSerialPortParams(commConfig.getBaudRate(),
+                                commConfig.getDataBit(),
+                                commConfig.getStopBit(), commConfig.getCheckoutBit());
+                    } catch(PortInUseException e){
                         System.out.println("端口被占用");
                         e.printStackTrace();
-                    } catch (TooManyListenersException e) {
+                    } catch(TooManyListenersException e){
                         System.out.println("监听器过多");
                         e.printStackTrace();
-                    } catch (UnsupportedCommOperationException e) {
+                    } catch(UnsupportedCommOperationException e){
                         System.out.println("不支持的COMM端口操作异常");
                         e.printStackTrace();
                     }
-                    // 结束循环
                     break;
                 }
             }
         }
-        // 若不存在该串口则抛出异常
-        if (!portExist) {
+        if(!portExist){
             System.out.println("不存在该串口！");
         }
     }
 
     @Override
     public void serialEvent(SerialPortEvent serialPortEvent){
-        switch (serialPortEvent.getEventType()) {
+        switch(serialPortEvent.getEventType()){
             case SerialPortEvent.BI:    // 通讯中断
             case SerialPortEvent.OE:    // 溢位错误
             case SerialPortEvent.FE:    // 帧错误
@@ -97,10 +95,10 @@ public class CommAccessor implements SerialPortEventListener{
             case SerialPortEvent.RI:    // 响铃侦测
             case SerialPortEvent.OUTPUT_BUFFER_EMPTY: // 输出缓冲区已清空
             default:
-                System.out.println("error event: " + serialPortEvent.getEventType());;
+                System.out.println("error event: " + serialPortEvent.getEventType());
                 break;
             case SerialPortEvent.DATA_AVAILABLE: // 有数据到达
-                readComm(false);
+                readComm();
                 break;
         }
     }
@@ -109,31 +107,42 @@ public class CommAccessor implements SerialPortEventListener{
      * Chen Sicong
      * Description: 读取串口数据
      */
-    private String readComm(boolean isHex){
-        try {
+    private void readComm(){
+        try{
             // 输入流
             InputStream inputStream = serialPort.getInputStream();
-            // 通过输入流对象的available方法获取数组字节长度
             byte[] readBuffer = new byte[inputStream.available()];
-            // 从线路上读取数据流
-            int len = 0;
-            if ((len = inputStream.read(readBuffer)) != -1) {
+            int len;
+            if((len = inputStream.read(readBuffer)) != -1){
                 // 直接获取到的数据
                 // 保存串口返回信息
                 String data = new String(readBuffer, 0, len).trim();
                 // 转为十六进制数据
                 // 保存串口返回信息十六进制
                 String dataHex = bytesToHexString(readBuffer);
-                System.out.println("data:" + data);
-                System.out.println("dataHex:" + dataHex);// 读取后置空流对象
+                System.out.println("data: " + data);
+                System.out.println("dataHex: " + dataHex);// 读取后置空流对象
+
+                // 处理接受数据
+                for(ArmPosition value : ArmPosition.values()){
+                    if(data.equals(value.toString())){
+                        ArmPositionInfoBO armPositionInfoBO = new ArmPositionInfoBO();
+                        armPositionInfoBO.setTimestamp(new Timestamp(System.currentTimeMillis()));
+                        armPositionInfoBO.setDescription(value.getDescription());
+                        positionList.add(armPositionInfoBO);
+
+                        while(positionList.size() > 10){
+                            positionList.remove(positionList.size() - 1);
+                        }
+                        break;
+                    }
+                }
                 inputStream.close();
-                return isHex ? dataHex : data;
             }
-        } catch (IOException e) {
+        } catch(IOException e){
             System.out.println("读取串口数据时发生IO异常");
             e.printStackTrace();
         }
-        return null;
     }
 
     /**
@@ -142,7 +151,7 @@ public class CommAccessor implements SerialPortEventListener{
      *
      * @param data the data
      */
-    public void sendComm(String data) {
+    public void sendComm(String data){
         byte[] writerBuffer;
         try{
             writerBuffer = hexToByteArray(data);
@@ -152,13 +161,13 @@ public class CommAccessor implements SerialPortEventListener{
             outputStream.write(writerBuffer);
             outputStream.flush();
             System.out.println("发送成功");
-        } catch (NumberFormatException e){
+        } catch(NumberFormatException e){
             System.out.println("命令格式错误！");
             e.printStackTrace();
-        } catch (NullPointerException e){
+        } catch(NullPointerException e){
             System.out.println("找不到串口");
             e.printStackTrace();
-        } catch (IOException e){
+        } catch(IOException e){
             System.out.println("发送信息到串口时发生IO异常");
             e.printStackTrace();
         }
@@ -171,20 +180,20 @@ public class CommAccessor implements SerialPortEventListener{
      * @param inHex the in hex
      * @return the byte [ ]
      */
-    private byte[] hexToByteArray(String inHex) {
+    private byte[] hexToByteArray(String inHex){
         int hexlen = inHex.length();
         byte[] result;
-        if (hexlen % 2 == 1) {
+        if(hexlen % 2 == 1){
             // 奇数
             hexlen++;
             result = new byte[(hexlen / 2)];
             inHex = "0" + inHex;
-        } else {
+        } else{
             // 偶数
             result = new byte[(hexlen / 2)];
         }
         int j = 0;
-        for (int i = 0; i < hexlen; i += 2) {
+        for(int i = 0; i < hexlen; i += 2){
             result[j] = hexToByte(inHex.substring(i, i + 2));
             j++;
         }
@@ -194,18 +203,19 @@ public class CommAccessor implements SerialPortEventListener{
 
     /**
      * Chen Sicong
-     * Description:
+     * Description: 字节转16位 用于接收
      *
      * @param bArray the b array
      * @return the string
      */
-    private String bytesToHexString(byte[] bArray) {
+    private String bytesToHexString(byte[] bArray){
         StringBuilder stringBuilder = new StringBuilder(bArray.length);
         String sTemp;
-        for (byte b : bArray){
+        for(byte b : bArray){
             sTemp = Integer.toHexString(0xFF & b);
-            if (sTemp.length() < 2)
+            if(sTemp.length() < 2){
                 stringBuilder.append(0);
+            }
             stringBuilder.append(sTemp.toUpperCase());
         }
         return stringBuilder.toString();
@@ -213,12 +223,12 @@ public class CommAccessor implements SerialPortEventListener{
 
     /**
      * Chen Sicong
-     * Description:
+     * Description: 16转字节 用于发送
      *
      * @param inHex the in hex
      * @return the byte
      */
-    private byte hexToByte(String inHex) {
+    private byte hexToByte(String inHex){
         return (byte) Integer.parseInt(inHex, 16);
     }
 }

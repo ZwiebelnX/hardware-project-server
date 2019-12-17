@@ -4,6 +4,7 @@ import com.njust.zcw.hardwareserver.utils.socket.MyWebSocketHandler;
 import com.njust.zcw.hardwareserver.utils.socket.MyWebSocketHandlerInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurationSupport;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -19,14 +20,14 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
  */
 @Configuration
 @EnableWebSocket
-public class WebSocketConfig{
+public class WebSocketConfig extends WebSocketConfigurationSupport {
 
 
-//    private final TextWebSocketHandler textWebSocketHandler = new MyWebSocketHandler();
-//
-//    @Override
-//    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry){
-//        registry.addHandler(textWebSocketHandler, "/websocket/socketServer")
-//        .addInterceptors(new MyWebSocketHandlerInterceptor()).setAllowedOrigins("*");
-//    }
+    private final TextWebSocketHandler textWebSocketHandler = new MyWebSocketHandler();
+
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry){
+        registry.addHandler(textWebSocketHandler, "/websocket/socketServer")
+        .addInterceptors(new MyWebSocketHandlerInterceptor()).setAllowedOrigins("*");
+    }
 }
