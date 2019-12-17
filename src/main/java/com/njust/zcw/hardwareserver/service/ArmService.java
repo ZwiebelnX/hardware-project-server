@@ -99,11 +99,11 @@ public class ArmService {
                 System.out.println("==== 连续抓取 ====");
                 break;
             case "开传送带":
-                commAccessor.sendComm("4b");
+                commAccessor.sendComm("4c");
                 System.out.println("==== 开传送带 ====");
                 break;
             case "关传送带":
-                commAccessor.sendComm("4c");
+                commAccessor.sendComm("4b");
                 System.out.println("==== 关传送带 ====");
                 break;
             case "切换控制":

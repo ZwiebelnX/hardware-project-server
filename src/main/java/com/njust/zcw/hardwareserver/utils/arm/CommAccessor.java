@@ -132,7 +132,7 @@ public class CommAccessor implements SerialPortEventListener {
                         positionList.add(armPositionInfoBO);
 
                         while(positionList.size() > 5){
-                            positionList.remove(positionList.size() - 1);
+                            positionList.remove(0);
                         }
                         break;
                     }
