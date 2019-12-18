@@ -8,6 +8,7 @@ import com.njust.zcw.hardwareserver.module.dto.SendCharDTO;
 import com.njust.zcw.hardwareserver.utils.arm.CommAccessor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -166,7 +167,15 @@ public class ArmService {
     }
 
     public List<ArmPositionInfoBO> getArmPositionHistory(){
-        return commAccessor.positionList;
+        return commAccessor.positionHistoryList;
+    }
+
+    public List<Integer> getAngles(){
+        List<Integer> list = new ArrayList<>();
+        for(int i : commAccessor.angleList){
+            list.add(i);
+        }
+        return list;
     }
 
     /**

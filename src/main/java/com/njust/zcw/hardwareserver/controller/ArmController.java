@@ -66,6 +66,12 @@ public class ArmController {
         return armService.getArmPositionHistory();
     }
 
+    @GetMapping("/angle")
+    public List<Integer> getAngle(){
+        return armService.getAngles();
+    }
+
+
     /**
      * Author: Chen Sicong
      * Description: 调试用，用于发送多种控制信号

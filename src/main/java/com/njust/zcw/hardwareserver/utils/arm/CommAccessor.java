@@ -23,7 +23,13 @@ import java.util.*;
 @Component
 public class CommAccessor implements SerialPortEventListener {
 
-    public final List<ArmPositionInfoBO> positionList = new ArrayList<>();
+    public final List<ArmPositionInfoBO> positionHistoryList = new ArrayList<>();
+
+    public final int[] angleList = new int[6];
+
+    private boolean loggingAngle = false;
+
+    public StringBuilder stringBuilder;
 
     // RS232串口
     private SerialPort serialPort;
@@ -121,20 +127,44 @@ public class CommAccessor implements SerialPortEventListener {
                 // 保存串口返回信息十六进制
                 String dataHex = bytesToHexString(readBuffer);
                 System.out.println("data: " + data);
-                System.out.println("dataHex: " + dataHex);// 读取后置空流对象
+                System.out.println("dataHex: " + dataHex);
 
                 // 处理接受数据
-                for(ArmPosition value : ArmPosition.values()){
-                    if(data.equals(value.toString())){
-                        ArmPositionInfoBO armPositionInfoBO = new ArmPositionInfoBO();
-                        armPositionInfoBO.setTimestamp(new Timestamp(System.currentTimeMillis()));
-                        armPositionInfoBO.setDescription(value.getDescription());
-                        positionList.add(armPositionInfoBO);
+                if(data.length() == 1){
+                    boolean positionFlag = false;
+                    for(ArmPosition value : ArmPosition.values()){
+                        if(data.equals(value.toString())){
+                            positionFlag = true;
+                            ArmPositionInfoBO armPositionInfoBO = new ArmPositionInfoBO();
+                            armPositionInfoBO
+                                    .setTimestamp(new Timestamp(System.currentTimeMillis()));
+                            armPositionInfoBO.setDescription(value.getDescription());
+                            positionHistoryList.add(armPositionInfoBO);
 
-                        while(positionList.size() > 5){
-                            positionList.remove(positionList.size() - 1);
+                            while(positionHistoryList.size() > 5){
+                                positionHistoryList.remove(positionHistoryList.size() - 1);
+                            }
+                            break;
                         }
-                        break;
+                    }
+                    if(!positionFlag){
+                        // 启动角度信息记录
+                        if((data.equals("$") || data.startsWith("$")) && !loggingAngle){
+                            loggingAngle = true;
+                            stringBuilder = new StringBuilder();
+                            stringBuilder.append(data);
+                        } else if(loggingAngle){
+                            stringBuilder.append(data);
+                            if(data.endsWith("$")){
+                                String angleString = stringBuilder.toString();
+                                angleString = angleString.substring(1, angleString.length() - 1);
+                                String[] angleStringList = angleString.split(",");
+                                for(int i = 0; i < angleStringList.length; i++){
+                                    angleList[i] = Integer.parseInt(angleStringList[i]);
+                                }
+                                loggingAngle = false;
+                            }
+                        }
                     }
                 }
                 inputStream.close();
