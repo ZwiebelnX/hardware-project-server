@@ -171,6 +171,7 @@ public class ArmService {
     }
 
     public List<Integer> getAngles(){
+        commAccessor.sendComm("68");
         List<Integer> list = new ArrayList<>();
         for(int i : commAccessor.angleList){
             list.add(i);

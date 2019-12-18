@@ -153,18 +153,21 @@ public class CommAccessor implements SerialPortEventListener {
                             loggingAngle = true;
                             stringBuilder = new StringBuilder();
                             stringBuilder.append(data);
-                        } else if(loggingAngle){
-                            stringBuilder.append(data);
-                            if(data.endsWith("$")){
-                                String angleString = stringBuilder.toString();
-                                angleString = angleString.substring(1, angleString.length() - 1);
-                                String[] angleStringList = angleString.split(",");
-                                for(int i = 0; i < angleStringList.length; i++){
-                                    angleList[i] = Integer.parseInt(angleStringList[i]);
-                                }
-                                loggingAngle = false;
-                            }
                         }
+                    }
+                } else if(loggingAngle){
+                    stringBuilder.append(data);
+                    if(data.endsWith("@")){
+                        loggingAngle = false;
+                        String angleString = stringBuilder.toString();
+                        angleString = angleString.substring(1, angleString.length() - 2);
+                        System.out.println(angleString);
+                        String[] angleStringList = angleString.split(",");
+                        for(int i = 0; i < angleStringList.length; i++){
+                            angleList[i] = (int)(Integer.parseInt(angleStringList[i]) * 0.3);
+                        }
+
+
                     }
                 }
                 inputStream.close();
