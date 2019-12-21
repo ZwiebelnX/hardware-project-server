@@ -2,7 +2,7 @@ package com.njust.zcw.hardwareserver.module.bo;
 
 /**
  * <p>Title: ArmPosition</p>
- * <p>Description: </p>
+ * <p>Description: 机械臂位置枚举</p>
  * <p>Copyright: Copyright (c) 2019版权</p>
  * <p>Company: Chan's Workshop</p>
  *

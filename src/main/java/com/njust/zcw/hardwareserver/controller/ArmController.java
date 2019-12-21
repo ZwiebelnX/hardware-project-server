@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * <p>Title: Controller</p>
- * <p>Description: </p>
+ * <p>Title: ArmController</p>
+ * <p>Description: http请求转发控制器</p>
  * <p>Copyright: Copyright (c) 2019版权</p>
  * <p>Company: Chan's Workshop</p>
  *
@@ -24,6 +24,11 @@ import java.util.List;
 public class ArmController {
     private final ArmService armService;
 
+    /**
+     * Instantiates a new Arm controller.
+     *
+     * @param armService the arm service
+     */
     public ArmController(ArmService armService){
         this.armService = armService;
     }
@@ -61,11 +66,23 @@ public class ArmController {
         armService.showDigital(digitalControlDTO);
     }
 
+    /**
+     * Author: Chen Sicong
+     * Description: 前端获取机械臂位置历史信息（保留五项）
+     *
+     * @return 位置历史
+     */
     @GetMapping("/positionHistory")
     public List<ArmPositionInfoBO> getArmPositionHistory(){
         return armService.getArmPositionHistory();
     }
 
+    /**
+     * Author: Chen Sicong
+     * Description: 前端获取机械臂六轴角度信息（存在一些bug）
+     *
+     * @return 轴角度
+     */
     @GetMapping("/angle")
     public List<Integer> getAngle(){
         return armService.getAngles();
@@ -76,7 +93,7 @@ public class ArmController {
      * Author: Chen Sicong
      * Description: 调试用，用于发送多种控制信号
      *
-     * @param sendCharDTO the send char dto
+     * @param sendCharDTO 直接向串口发送的信号
      */
     @PostMapping("/sendChar")
     public void sendChar(@RequestBody SendCharDTO sendCharDTO){

@@ -2,6 +2,7 @@ package com.njust.zcw.hardwareserver.utils.arm;
 
 import com.njust.zcw.hardwareserver.module.bo.ArmPosition;
 import com.njust.zcw.hardwareserver.module.bo.ArmPositionInfoBO;
+import com.njust.zcw.hardwareserver.module.bo.CommConfigBO;
 import gnu.io.*;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,7 @@ import java.sql.Timestamp;
 import java.util.*;
 
 /**
- * <p>Title: ComUtil</p>
+ * <p>Title: 串口通讯相关，依赖RXTX，参考自2015级学长</p>
  * <p>Description: </p>
  * <p>Copyright: Copyright (c) 2019版权</p>
  * <p>Company: Chan's Workshop</p>
@@ -35,7 +36,7 @@ public class CommAccessor implements SerialPortEventListener {
     private SerialPort serialPort;
 
     public CommAccessor(){
-        CommConfig com1 = new CommConfig();
+        CommConfigBO com1 = new CommConfigBO();
         com1.setSerialNumber("COM1");
         com1.setBaudRate(115200);
         com1.setCheckoutBit(0);
@@ -45,7 +46,7 @@ public class CommAccessor implements SerialPortEventListener {
         init(com1);
     }
 
-    private void init(CommConfig commConfig){
+    private void init(CommConfigBO commConfigBO){
         Enumeration<CommPortIdentifier> portList = CommPortIdentifier.getPortIdentifiers();
         boolean portExist = false;
         while(portList.hasMoreElements()){
@@ -54,7 +55,7 @@ public class CommAccessor implements SerialPortEventListener {
             // 判断是否是串口
             if(commPortId.getPortType() == CommPortIdentifier.PORT_SERIAL){
                 // 比较串口名称是否是指定串口
-                if(commConfig.getSerialNumber().equals(commPortId.getName())){
+                if(commConfigBO.getSerialNumber().equals(commPortId.getName())){
                     portExist = true;
                     // 打开串口
                     try{
@@ -66,9 +67,10 @@ public class CommAccessor implements SerialPortEventListener {
                         // 设置串口数据时间有效(可监听)
                         serialPort.notifyOnDataAvailable(true);
                         // 设置串口通讯参数:波特率，数据位，停止位,校验方式
-                        serialPort.setSerialPortParams(commConfig.getBaudRate(),
-                                commConfig.getDataBit(),
-                                commConfig.getStopBit(), commConfig.getCheckoutBit());
+                        serialPort.setSerialPortParams(commConfigBO.getBaudRate(),
+                                                       commConfigBO.getDataBit(),
+                                                       commConfigBO.getStopBit(),
+                                                       commConfigBO.getCheckoutBit());
                     } catch(PortInUseException e){
                         System.out.println("端口被占用");
                         e.printStackTrace();
@@ -110,7 +112,7 @@ public class CommAccessor implements SerialPortEventListener {
     }
 
     /**
-     * Chen Sicong
+     * Chen Sicong & 2015级学长
      * Description: 读取串口数据
      */
     private void readComm(){
@@ -164,7 +166,7 @@ public class CommAccessor implements SerialPortEventListener {
                         System.out.println(angleString);
                         String[] angleStringList = angleString.split(",");
                         for(int i = 0; i < angleStringList.length; i++){
-                            angleList[i] = (int)(Integer.parseInt(angleStringList[i]) * 0.3);
+                            angleList[i] = (int) (Integer.parseInt(angleStringList[i]) * 0.3);
                         }
 
 
@@ -179,7 +181,7 @@ public class CommAccessor implements SerialPortEventListener {
     }
 
     /**
-     * Chen Sicong
+     * Chen Sicong & 2015级学长
      * Description: 向串口发送数据
      *
      * @param data the data
@@ -207,7 +209,7 @@ public class CommAccessor implements SerialPortEventListener {
     }
 
     /**
-     * Chen Sicong
+     * 2015级学长
      * Description:
      *
      * @param inHex the in hex
@@ -235,7 +237,7 @@ public class CommAccessor implements SerialPortEventListener {
 
 
     /**
-     * Chen Sicong
+     * 2015级学长
      * Description: 字节转16位 用于接收
      *
      * @param bArray the b array
@@ -255,7 +257,7 @@ public class CommAccessor implements SerialPortEventListener {
     }
 
     /**
-     * Chen Sicong
+     * 2015级学长
      * Description: 16转字节 用于发送
      *
      * @param inHex the in hex

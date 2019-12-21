@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>Title: Service</p>
- * <p>Description: </p>
+ * <p>Title: ArmService</p>
+ * <p>Description: 机械臂控制相关逻辑处理，参考自2015学长</p>
  * <p>Copyright: Copyright (c) 2019版权</p>
  * <p>Company: Chan's Workshop</p>
  *
@@ -24,12 +24,17 @@ import java.util.List;
 public class ArmService {
     private final CommAccessor commAccessor;
 
+    /**
+     * Instantiates a new Arm service.
+     *
+     * @param commAccessor the comm accessor
+     */
     public ArmService(CommAccessor commAccessor){
         this.commAccessor = commAccessor;
     }
 
     /**
-     * Author: Chen Sicong
+     * Author: Chen Sicong & 2015学长
      * Description: 控制六轴
      *
      * @param axisControlDTO the axis control dto
@@ -84,7 +89,7 @@ public class ArmService {
     }
 
     /**
-     * Author: Chen Sicong
+     * Author:  Chen Sicong & 2015学长
      * Description: 控制机械臂连续动作
      *
      * @param remoteControlDTO the remote control dto
@@ -124,7 +129,7 @@ public class ArmService {
     }
 
     /**
-     * Author: Chen Sicong
+     * Author:  Chen Sicong & 2015学长
      * Description: 控制传送带数据显示
      *
      * @param digitalControlDTO the digital control dto
@@ -166,11 +171,29 @@ public class ArmService {
         }
     }
 
+    /**
+     * Author: Chen Sicong
+     * Description:
+     *
+     * @return the list
+     */
     public List<ArmPositionInfoBO> getArmPositionHistory(){
         return commAccessor.positionHistoryList;
     }
 
+    /**
+     * Author: Chen Sicong
+     * Description: 获取六轴位置信息
+     *
+     * @return the list
+     */
     public List<Integer> getAngles(){
+        /*
+        本处存在bug
+        本次请求的位置信息，只有到下一次请求才会更新至前端
+        由于本请求接口采用http请求，并且此处逻辑没有采用阻塞，故请求信息会有不同步
+        在CommAccessor中改为阻塞等待数据到达后可解决此问题
+         */
         commAccessor.sendComm("68");
         List<Integer> list = new ArrayList<>();
         for(int i : commAccessor.angleList){
@@ -183,7 +206,7 @@ public class ArmService {
      * Author: Chen Sicong
      * Description: 调试接口
      *
-     * @param sendCharDTO the send char dto
+     * @param sendCharDTO 需要发送的信号
      */
     public void sendChar(SendCharDTO sendCharDTO){
         commAccessor.sendComm(sendCharDTO.getString());
